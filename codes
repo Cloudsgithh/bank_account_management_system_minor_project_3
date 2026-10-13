@@ -1,0 +1,198 @@
+
+import json
+import os
+from datetime import datetime
+
+FILE_NAME = "bank_data.json"
+
+
+def load_data():
+    if os.path.exists(FILE_NAME):
+        with open(FILE_NAME, "r") as file:
+            return json.load(file)
+    return {}
+
+
+def save_data():
+    with open(FILE_NAME, "w") as file:
+        json.dump(accounts, file, indent=4)
+
+
+accounts = load_data()
+
+
+def create_account():
+    acc_no = input("Enter account number: ")
+
+    if acc_no in accounts:
+        print("Account already exists!")
+        return
+
+    name = input("Enter account holder name: ")
+
+    try:
+        initial_balance = float(input("Enter initial deposit: "))
+
+        if initial_balance < 0:
+            print("Initial deposit cannot be negative.")
+            return
+
+    except ValueError:
+        print("Please enter a valid amount.")
+        return
+
+    accounts[acc_no] = {
+        "name": name,
+        "balance": initial_balance,
+        "transactions": []
+    }
+
+    accounts[acc_no]["transactions"].append(
+        f"{datetime.now():%Y-%m-%d %H:%M:%S} - "
+        f"Account opened with Rs. {initial_balance:.2f}"
+    )
+
+    save_data()
+    print("Account created successfully!")
+
+
+def deposit_money():
+    acc_no = input("Enter account number: ")
+
+    if acc_no not in accounts:
+        print("Account not found!")
+        return
+
+    try:
+        amount = float(input("Enter deposit amount: "))
+
+        if amount <= 0:
+            print("Amount must be greater than zero.")
+            return
+
+    except ValueError:
+        print("Please enter a valid amount.")
+        return
+
+    accounts[acc_no]["balance"] += amount
+
+    accounts[acc_no]["transactions"].append(
+        f"{datetime.now():%Y-%m-%d %H:%M:%S} - "
+        f"Deposited Rs. {amount:.2f}"
+    )
+
+    save_data()
+    print("Money deposited successfully!")
+
+
+def withdraw_money():
+    acc_no = input("Enter account number: ")
+
+    if acc_no not in accounts:
+        print("Account not found!")
+        return
+
+    try:
+        amount = float(input("Enter withdrawal amount: "))
+
+        if amount <= 0:
+            print("Amount must be greater than zero.")
+            return
+
+    except ValueError:
+        print("Please enter a valid amount.")
+        return
+
+    if amount > accounts[acc_no]["balance"]:
+        print("Insufficient balance!")
+        return
+
+    accounts[acc_no]["balance"] -= amount
+
+    accounts[acc_no]["transactions"].append(
+        f"{datetime.now():%Y-%m-%d %H:%M:%S} - "
+        f"Withdrawn Rs. {amount:.2f}"
+    )
+
+    save_data()
+    print("Withdrawal successful!")
+
+
+def check_balance():
+    acc_no = input("Enter account number: ")
+
+    if acc_no not in accounts:
+        print("Account not found!")
+        return
+
+    print("Account Holder:", accounts[acc_no]["name"])
+    print(
+        "Current Balance: Rs.",
+        f"{accounts[acc_no]['balance']:.2f}"
+    )
+
+
+def transaction_history():
+    acc_no = input("Enter account number: ")
+
+    if acc_no not in accounts:
+        print("Account not found!")
+        return
+
+    print("\nTransaction History")
+    print("-------------------")
+
+    transactions = accounts[acc_no]["transactions"]
+
+    if not transactions:
+        print("No transactions found.")
+    else:
+        for transaction in transactions:
+            print(transaction)
+
+
+def main():
+    while True:
+        print("\n===== BANK ACCOUNT MANAGEMENT SYSTEM =====")
+        print("1. Create Account")
+        print("2. Deposit Money")
+        print("3. Withdraw Money")
+        print("4. Check Balance")
+        print("5. Transaction History")
+        print("6. Save Data")
+        print("7. Exit")
+
+        choice = input("Enter your choice: ")
+
+        if choice == "1":
+            create_account()
+
+        elif choice == "2":
+            deposit_money()
+
+        elif choice == "3":
+            withdraw_money()
+
+        elif choice == "4":
+            check_balance()
+
+        elif choice == "5":
+            transaction_history()
+
+        elif choice == "6":
+            save_data()
+            print("Data saved successfully!")
+
+        elif choice == "7":
+            save_data()
+            print(
+                "Data saved. Thank you for using the system!"
+            )
+            break
+
+        else:
+            print("Invalid choice! Please try again.")
+
+
+if __name__ == "__main__":
+    main()
